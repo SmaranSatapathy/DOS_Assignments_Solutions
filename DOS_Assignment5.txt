@@ -1,0 +1,321 @@
+Assignment-5
+Q1) PRODUCER CONSUMER PROBLEM: -> q1.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+#define BUFFER_SIZE 10
+#define NUM_ITERATIONS 20
+
+int buffer[BUFFER_SIZE];
+int count = 0; // Tracks the number of items in the buffer
+int in = 0;    // Points to the next free position in the buffer
+int out = 0;   // Points to the next item to consume
+
+pthread_mutex_t mutex;
+sem_t empty;
+sem_t full;
+
+// Producer function
+void* producer(void* arg) {
+    for (int i = 1; i <= NUM_ITERATIONS; i++) {
+        sem_wait(&empty); // Wait for empty slots
+        pthread_mutex_lock(&mutex); // Lock the buffer
+
+        buffer[in] = i; // Produce the item
+        printf("Producer: Produced %d\n", i);
+        in = (in + 1) % BUFFER_SIZE; // Update the buffer index
+        count++;
+
+        pthread_mutex_unlock(&mutex); // Unlock the buffer
+        sem_post(&full); // Signal that a new item is available
+
+        usleep(rand() % 100000); // Simulate production time
+    }
+    pthread_exit(NULL);
+}
+
+// Consumer function
+void* consumer(void* arg) {
+    for (int i = 1; i <= NUM_ITERATIONS; i++) {
+        sem_wait(&full); // Wait for items to consume
+        pthread_mutex_lock(&mutex); // Lock the buffer
+
+        int item = buffer[out]; // Consume the item
+        printf("Consumer: Consumed %d\n", item);
+        out = (out + 1) % BUFFER_SIZE; // Update the buffer index
+        count--;
+
+        pthread_mutex_unlock(&mutex); // Unlock the buffer
+        sem_post(&empty); // Signal that a slot is empty
+
+        usleep(rand() % 100000); // Simulate consumption time
+    }
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t prod_thread, cons_thread;
+
+    // Initialize the mutex and semaphores
+    pthread_mutex_init(&mutex, NULL);
+    sem_init(&empty, 0, BUFFER_SIZE); // Buffer starts empty
+    sem_init(&full, 0, 0);            // No items to consume initially
+
+    // Create producer and consumer threads
+    pthread_create(&prod_thread, NULL, producer, NULL);
+    pthread_create(&cons_thread, NULL, consumer, NULL);
+
+    // Wait for the threads to complete
+    pthread_join(prod_thread, NULL);
+    pthread_join(cons_thread, NULL);
+
+    // Destroy mutex and semaphores
+    pthread_mutex_destroy(&mutex);
+    sem_destroy(&empty);
+    sem_destroy(&full);
+
+    return 0;
+}
+
+to run: gcc q1.c
+	./a.out
+
+Q2) ODD EVEN NUMBERS: -> q2.c
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+#define MAX_NUMBER 20
+
+sem_t sem_odd, sem_even;
+
+// Thread A: Prints odd numbers
+void* print_odd(void* arg) {
+    for (int i = 1; i <= MAX_NUMBER; i += 2) {
+        sem_wait(&sem_odd); // Wait for the turn to print odd
+        printf("Thread A (Odd): %d\n", i);
+        sem_post(&sem_even); // Signal Thread B (Even)
+    }
+    pthread_exit(NULL);
+}
+
+// Thread B: Prints even numbers
+void* print_even(void* arg) {
+    for (int i = 2; i <= MAX_NUMBER; i += 2) {
+        sem_wait(&sem_even); // Wait for the turn to print even
+        printf("Thread B (Even): %d\n", i);
+        sem_post(&sem_odd); // Signal Thread A (Odd)
+    }
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t thread_odd, thread_even;
+
+    // Initialize semaphores
+    sem_init(&sem_odd, 0, 1);  // Thread A starts first
+    sem_init(&sem_even, 0, 0); // Thread B waits initially
+
+    // Create threads
+    pthread_create(&thread_odd, NULL, print_odd, NULL);
+    pthread_create(&thread_even, NULL, print_even, NULL);
+
+    // Wait for threads to finish
+    pthread_join(thread_odd, NULL);
+    pthread_join(thread_even, NULL);
+
+    // Destroy semaphores
+    sem_destroy(&sem_odd);
+    sem_destroy(&sem_even);
+
+    return 0;
+}
+
+to run: gcc q2.c
+	./a.out
+
+Q3) ALTERNATE CHARACTERS: ->q3.c
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+#define MAX_COUNT 20
+
+sem_t sem_A, sem_B;
+
+// Thread A: Prints 'A'
+void* print_A(void* arg) {
+    for (int i = 0; i < MAX_COUNT; i++) {
+        sem_wait(&sem_A); // Wait for the turn to print 'A'
+        printf("A");
+        fflush(stdout); // Ensure immediate output
+        sem_post(&sem_B); // Signal Thread B to print 'B'
+    }
+    pthread_exit(NULL);
+}
+
+// Thread B: Prints 'B'
+void* print_B(void* arg) {
+    for (int i = 0; i < MAX_COUNT; i++) {
+        sem_wait(&sem_B); // Wait for the turn to print 'B'
+        printf("B");
+        fflush(stdout); // Ensure immediate output
+        sem_post(&sem_A); // Signal Thread A to print 'A'
+    }
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t thread_A, thread_B;
+
+    // Initialize semaphores
+    sem_init(&sem_A, 0, 1);  // Thread A starts first
+    sem_init(&sem_B, 0, 0);  // Thread B waits initially
+
+    // Create threads
+    pthread_create(&thread_A, NULL, print_A, NULL);
+    pthread_create(&thread_B, NULL, print_B, NULL);
+
+    // Wait for threads to finish
+    pthread_join(thread_A, NULL);
+    pthread_join(thread_B, NULL);
+
+    // Destroy semaphores
+    sem_destroy(&sem_A);
+    sem_destroy(&sem_B);
+
+    return 0;
+}
+
+to run: gcc q3.c
+	./a.out
+
+Q4) COUNTDOWN and COUNTUP -> q4.c
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+#define MAX_COUNT 10
+
+sem_t sem_A, sem_B;
+
+// Thread A: Counts down from 10 to 1
+void* count_down(void* arg) {
+    for (int i = MAX_COUNT; i >= 1; i--) {
+        sem_wait(&sem_A); // Wait for the turn to count down
+        printf("Thread A: %d\n", i);
+        fflush(stdout); // Ensure immediate output
+        sem_post(&sem_B); // Signal Thread B to count up
+    }
+    pthread_exit(NULL);
+}
+
+// Thread B: Counts up from 1 to 10
+void* count_up(void* arg) {
+    for (int i = 1; i <= MAX_COUNT; i++) {
+        sem_wait(&sem_B); // Wait for the turn to count up
+        printf("Thread B: %d\n", i);
+        fflush(stdout); // Ensure immediate output
+        sem_post(&sem_A); // Signal Thread A to count down
+    }
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t thread_A, thread_B;
+
+    // Initialize semaphores
+    sem_init(&sem_A, 0, 1);  // Thread A starts first
+    sem_init(&sem_B, 0, 0);  // Thread B waits initially
+
+    // Create threads
+    pthread_create(&thread_A, NULL, count_down, NULL);
+    pthread_create(&thread_B, NULL, count_up, NULL);
+
+    // Wait for threads to finish
+    pthread_join(thread_A, NULL);
+    pthread_join(thread_B, NULL);
+
+    // Destroy semaphores
+    sem_destroy(&sem_A);
+    sem_destroy(&sem_B);
+
+    return 0;
+}
+
+to run: gcc q4.c
+	./a.out
+
+Q5) SEQUENCE PRINTING -> q5.c
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+#define MAX_COUNT 20
+
+sem_t sem_A, sem_B, sem_C;
+
+// Thread A: Prints A1, A4, A7, ...
+void* print_A(void* arg) {
+    for (int i = 1; i <= MAX_COUNT; i += 3) {
+        sem_wait(&sem_A); // Wait for the turn to print A
+        printf("A%d\n", i);
+        fflush(stdout); // Ensure immediate output
+        sem_post(&sem_B); // Signal Thread B to print next
+    }
+    pthread_exit(NULL);
+}
+
+// Thread B: Prints B2, B5, B8, ...
+void* print_B(void* arg) {
+    for (int i = 2; i <= MAX_COUNT; i += 3) {
+        sem_wait(&sem_B); // Wait for the turn to print B
+        printf("B%d\n", i);
+        fflush(stdout); // Ensure immediate output
+        sem_post(&sem_C); // Signal Thread C to print next
+    }
+    pthread_exit(NULL);
+}
+
+// Thread C: Prints C3, C6, C9, ...
+void* print_C(void* arg) {
+    for (int i = 3; i <= MAX_COUNT; i += 3) {
+        sem_wait(&sem_C); // Wait for the turn to print C
+        printf("C%d\n", i);
+        fflush(stdout); // Ensure immediate output
+        sem_post(&sem_A); // Signal Thread A to print next
+    }
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t thread_A, thread_B, thread_C;
+
+    // Initialize semaphores
+    sem_init(&sem_A, 0, 1);  // Thread A starts first
+    sem_init(&sem_B, 0, 0);  // Thread B waits initially
+    sem_init(&sem_C, 0, 0);  // Thread C waits initially
+
+    // Create threads
+    pthread_create(&thread_A, NULL, print_A, NULL);
+    pthread_create(&thread_B, NULL, print_B, NULL);
+    pthread_create(&thread_C, NULL, print_C, NULL);
+
+    // Wait for threads to finish
+    pthread_join(thread_A, NULL);
+    pthread_join(thread_B, NULL);
+    pthread_join(thread_C, NULL);
+
+    // Destroy semaphores
+    sem_destroy(&sem_A);
+    sem_destroy(&sem_B);
+    sem_destroy(&sem_C);
+
+    return 0;
+}
+
+to run: gcc q5.c
+	./a.out

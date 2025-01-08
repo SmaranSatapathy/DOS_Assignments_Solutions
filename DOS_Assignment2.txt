@@ -1,0 +1,102 @@
+Assignmnet-2
+Q1) Sort the numbers in ascending:
+cat> a.txt
+45
+ctrl+c
+cat >b.txt
+100
+ctrl+c
+cat> c.txt
+10
+ctrl+c
+
+cat>prog
+#!/bin/bash
+cat a.txt b.txt c.txt > result
+sort -n result
+ctrl+d
+
+chmod +x prog
+./prog
+
+Q2) WRITE THE SYSTEM DETAILS INCLUDING THE USERNAME, SYSTEM USED, TYPE OF SHELL, PWD AND LS.
+cat>systeminfo
+#!/bin/bash
+logname
+uname -s
+pwd
+ls
+echo "Shell used is: $SHELL"
+ctrl+d
+
+chmod +x systeminfo
+./systeminfo
+
+Q3) Write the date and cal function scripting.
+cat>dtcal
+#!/bin/bash
+date "+%Y-%m-%d"
+cal
+ctrl+d
+
+chmod +x dtcal
+./dtcal
+
+Q4) Write script shell to count words,lines and characters in file dtcal.
+cat>nvwc
+#!/bin/bash
+
+filename="dtcal"
+line_count=$(wc -l<"$filename")
+word_count=$(wc -w<"$filename")
+char_count=$(wc -c<"$filename")
+echo "Lines are: $line_count"
+echo "Words are: $word_count"
+echo "CHaracters are: $char_count"
+ctrl+d
+
+chmod +x nvwc
+./nvwc
+
+Q5) Write script shell to count words,lines and characters in file dtcal by passing it as an argument.
+cat>nvwc2
+#!/bin/bash
+
+filename="$1"
+line_count=$(wc -l<"$filename")
+word_count=$(wc -w<"$filename")
+char_count=$(wc -c<"$filename")
+echo "Lines are: $line_count"
+echo "Words are: $word_count"
+echo "CHaracters are: $char_count"
+ctrl+d
+
+chmod +x nvwc2 dtcal
+./nvwc2
+
+Q6) Write a script file such that it displays total number of arguments, 1st & 2nd argument, and all arguments:
+cat>darg
+#!/bin/bash
+
+echo "Total Number of arguments are: $#"
+echo "1st argument: $1 and 2nd argument is: $2"
+echo "All arguments are: $@"
+ctrl+d
+
+chmod +x darg
+./darg 3 4 5 100 
+
+Q7) Write a shell script named as ndisp that will take three command line arguments specifying the value of n, m and a filename and display the first n number of lines and last m number of lines of the file given as argument.
+cat>ndisp
+#!/bin/bash
+
+n="$1"
+m="$2"
+filename="$3"
+
+head -n $n "$filename"
+tail -n $m "$filename"
+ctrl+d
+
+chmod +x ndisp
+./ndisp 3 2 enter_a_file_name

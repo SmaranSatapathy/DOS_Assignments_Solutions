@@ -1,0 +1,232 @@
+ASSIGNMENT-3
+Q1) Write a shell script iaop to perform integer arithmetic on two numbers, where the value of the two numbers will be given during runtime.
+
+cat>iaop
+#!/bin/bash
+
+sum=$(( $1 + $2 ))
+d=$(( $1 - $2 ))
+m=$(( $1 * $2 ))
+divi=$(( $1 / $2 ))
+echo "Add is: $sum"
+echo "Diff is: $d"
+echo "Product is: $m"
+echo "Division is: $divi"
+
+chmod +x iaop
+./iaop 8 4
+
+Q2) Write a shell script faop to perform floating point arithmetic on two numbers, where the
+value of the two numbers will be given during runtime.
+cat>faop
+#!/bin/bash
+
+sum=$(echo "$1 + $2" | bc)
+d=$(echo "$1 - $2" | bc)
+m=$(echo "$1 * $2" | bc )
+divi=$(echo "scale=3; $1 / $2 " | bc)
+echo "Add is: $sum"
+echo "Diff is: $d"
+echo "Product is: $m"
+echo "Division is: $divi"
+ctrl+d
+chmod +x faop
+./faop 5.0 2.0
+
+Q3)Ramesh’s basic salary is input through the keyboard. His dearness allowance is 40% of basic salary, and house rent allowance is 20% of basic salary. Write a program to calculate his gross salary.
+cat>Ramesh
+#!/bin/bash
+
+echo  "Enter salary: "
+read salary
+house_rent=$(echo "scale=4; 0.2 * $salary " | bc)
+dearness_allowance=$(echo "scale=3; 0.4 * $salary " | bc)
+echo "Salary is: $salary"
+gross_salary=$(echo "scale=3; $salary - $house_rent - $dearness_allowance" | bc)
+echo "Gross salary is:  $gross_salary"
+ctrl+d 
+chmod +x Ramesh
+./Ramesh
+
+
+Q4) Enter 5 digit number during input and find its sum.
+cat>sums
+#!/bin/bash
+
+echo "Enter a 5 digit number: "
+read n
+
+num=$n
+
+sum=0
+digits=0
+
+while [ $n -ne 0 ]
+do
+rem=$(( n % 10 ))
+digits=$(( digits + 1 ))
+n=$(( n / 10 ))
+done
+
+echo "Digits are: $digits"
+
+if [[ $digits -eq 5 ]]
+then
+while [[ $num -ne 0 ]]
+do
+rem=$(( num % 10 ))
+sum=$(( rem + sum ))
+num=$(( num /10 ))
+done
+fi
+
+echo "Sum is: $sum"
+ctrl+d
+chmod +x sums
+./sums
+
+Q5) Calculate the loss/profit incurred.
+#!/bin/bash
+
+echo "Enter Cost Price:"
+read cost_price
+echo "Enter Selling Price:"
+read selling_price
+
+if [ $selling_price -gt $cost_price ]; then
+    profit=$((selling_price - cost_price))
+    echo "Profit of: $profit"
+elif [ $cost_price -gt $selling_price ]; then
+    loss=$((cost_price - selling_price))
+    echo "Loss of: $loss"
+else
+    echo "No profit, no loss."
+fi
+
+Q6)Leap year check:
+#!/bin/bash
+
+year=$(date +%Y)  # Default to current year
+if [ $# -eq 1 ]; then
+    year=$1
+fi
+
+if [ $((year % 4)) -eq 0 -a $((year % 100)) -ne 0 -o $((year % 400)) -eq 0 ]; then
+    echo "$year is a Leap Year"
+else
+    echo "$year is not a Leap Year"
+fi
+
+
+Q7) Semester mark check:
+#!/bin/bash
+
+echo "Enter Internal Marks:"
+read marks
+echo "Enter Percentage Attendance:"
+read attendance
+
+if [ $marks -ge 20 ] && [ $attendance -ge 75 ]; then
+    echo "Allowed for Semester"
+else
+    echo "Not Allowed"
+fi
+
+
+Q8) Smallest of three numbers: 
+#!/bin/bash
+
+echo "Enter Internal Marks:"
+read marks
+echo "Enter Percentage Attendance:"
+read attendance
+
+if [ $marks -ge 20 ] && [ $attendance -ge 75 ]; then
+    echo "Allowed for Semester"
+else
+    echo "Not Allowed"
+fi
+
+
+Q9) CHaracter classification: 
+#!/bin/bash
+
+echo "Enter a character:"
+read char
+
+if [ ${#char} -gt 1 ]; then
+    echo "You have entered more than one character."
+elif [[ "$char" =~ [a-z] ]]; then
+    echo "You entered a lower case alphabet."
+elif [[ "$char" =~ [A-Z] ]]; then
+    echo "You entered an upper case alphabet."
+elif [[ "$char" =~ [0-9] ]]; then
+    echo "You have entered a digit."
+else
+    echo "You have entered a special symbol."
+fi
+
+
+Q10) DOS Class Timetable: 
+#!/bin/bash
+
+echo "Enter a day:"
+read day
+
+case $day in
+    "Monday"|"Wednesday"|"Friday")
+        echo "DOS Class: 10 AM, Room 101"
+        ;;
+    "Tuesday"|"Thursday")
+        echo "DOS Class: 2 PM, Room 202"
+        ;;
+    "Sunday")
+        echo "Holiday"
+        ;;
+    *)
+        echo "No class on $day"
+        ;;
+esac
+
+Q11) File content check
+#!/bin/bash
+
+if [ $# -ne 2 ]; then
+    echo "Please provide two file names as arguments."
+    exit 1
+fi
+
+if cmp -s "$1" "$2"; then
+    echo "Files $1 and $2 have same content."
+    rm "$2"
+    echo "So $2 is deleted."
+else
+    echo "Files $1 and $2 have different content."
+fi
+
+
+Q12) CALCULATOR
+#!/bin/bash
+
+if [ $# -ne 3 ]; then
+    echo "Invalid input"
+    echo "Enter input in the following format: op1 operator op2"
+    exit 1
+fi
+
+op1=$1
+operator=$2
+op2=$3
+
+case $operator in
+    +) result=$((op1 + op2)) ;;
+    -) result=$((op1 - op2)) ;;
+    x) result=$((op1 * op2)) ;;
+    /) result=$((op1 / op2)) ;;
+    %) result=$((op1 % op2)) ;;
+    ^) result=$(echo "$op1 ^ $op2" | bc) ;;
+    *) echo "Invalid operator"; exit 1 ;;
+esac
+
+echo "$op1 $operator $op2 = $result"
+
